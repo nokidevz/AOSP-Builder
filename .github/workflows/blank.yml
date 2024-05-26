@@ -1,0 +1,76 @@
+env:
+    MANIFEST: https://github.com/LineageOS/android.git -b lineage-20.0
+    DEVICE: fleur
+    OEM: xiaomi
+    DT_LINK: https://github.com/nokidevz/android_device_xiaomi_fleur.git
+    DT_PATH: device/$OEM/$DEVICE
+    VT_LINK: https://github.com/nokidevz/proprietary_vendor_xiaomi_fleur-ims.git
+    VT_PATH: vendor/$OEM/$DEVICE
+    KT_LINK: https://github.com/nokidevz/android_kernel_xiaomi_fleur-headers.git
+    PLATFORM: fleur
+    TARGET: fleur
+    EXTRA_CMD: export SKIP_ABI_CHECKS=true
+    LUNCH_COMBO: lineage_fleur-userdebug
+    OUTPUT: boot.img
+
+task:
+  name: "Setting Up, Syncing, Building and Uploading..."
+  timeout_in: 240m  
+  container:
+      image: ghcr.io/sushrut1101/docker:arch
+      cpu: 4
+      memory: 16G
+
+
+
+  Storage-Checker_script:
+      - df -h
+      - lsblk
+      - ls -l -a -h
+  
+  Sync_script:
+      - echo "============================"
+      - echo "Syncing The Sources..."
+      - echo "============================"
+      - mkdir -p ~/work
+      - cd ~/work
+      - repo init --depth=1 -u $MANIFEST
+      - repo sync -j4 --force-sync --no-tags --no-clone-bundle
+      - git clone $DT_LINK device/xiaomi/fleur
+      - git clone $VT_LINK $VT_PATH vendor/xiaomi/fleur
+      - git clone $KT_LINK $KT_PATH
+      - echo "============================"
+      - echo "Syncing Complete!"
+      - echo "============================"
+
+  Build_script:
+      - echo "============================"
+      - echo "Starting the Build..."
+      - echo "============================"
+      - cd ~/work
+      - $EXTRA_CMD
+      - export USE_CCACHE=1
+      - export CCACHE_EXEC=/usr/bin/ccache
+      - ccache -M 50G
+      - . build/envsetup.sh
+      - lunch "$LUNCH_COMBO"
+      - mka -j4 bootimage
+     
+  Upload_script:
+      - echo "============================"
+      - echo "Uploading the Build..."
+      - echo "============================"
+      - cd ~/work
+      - cd $OUT
+      - ls -lh
+      - pwd
+      - chmod 777 *
+      - curl --upload-file $(echo $OUTPUT) https://transfer.sh | tee link.txt && echo " "
+      - echo " "
+      - echo "============================"
+      - echo "Build Uploaded!"
+      - echo "Please see the link Below-  "
+      - echo "----------------------------"
+      - cat link.txt && echo " "
+      - echo "============================"
+        
