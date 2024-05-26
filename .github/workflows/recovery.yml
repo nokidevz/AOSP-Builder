@@ -35,7 +35,7 @@ jobs:
           mkdir linag
           cd linag
           git lfs install
-          repo init -u https://github.com/LineageOS/android.git -b lineage-20.0 --git-lfs --depth=1
+          repo init -u https://github.com/LineageOS/android.git -b lineage-20.0 --depth=1
           repo sync
           git clone https://github.com/LineageOS/android_hardware_xiaomi.git hardware/xiaomi -b lineage-20 --depth=1
           git clone https://github.com/LineageOS/android_device_mediatek_sepolicy_vndr.git device/mediatek/sepolicy_vndr -b lineage-20 --depth=1
