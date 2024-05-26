@@ -34,6 +34,7 @@ jobs:
           sudo apt install -y repo curl
           mkdir linag
           cd linag
+          git lfs install
           repo init -u https://github.com/LineageOS/android.git -b lineage-20.0 --git-lfs --depth=1
           repo sync
           git clone https://github.com/LineageOS/android_hardware_xiaomi.git hardware/xiaomi -b lineage-20 --depth=1
