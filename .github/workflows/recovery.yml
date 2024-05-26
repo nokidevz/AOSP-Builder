@@ -1,0 +1,51 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "master" branch
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v4
+
+      # Runs a set of commands using the runners shell
+      - name: Run a multi-line script
+        run: |
+          sudo apt install -y bc bison build-essential ccache curl flex g++-multilib gcc-multilib git git-lfs gnupg gperf imagemagick lib32readline-dev lib32z1-dev libelf-dev liblz4-tool libsdl1.2-dev libssl-dev libxml2 libxml2-utils lzop pngcrush rsync schedtool squashfs-tools xsltproc zip zlib1g-dev python-is-python3
+          wget http://archive.ubuntu.com/ubuntu/pool/universe/n/ncurses/libtinfo5_6.4-2_amd64.deb && sudo dpkg -i libtinfo5_6.4-2_amd64.deb && rm -f libtinfo5_6.4-2_amd64.deb
+          wget http://archive.ubuntu.com/ubuntu/pool/universe/n/ncurses/libncurses5_6.4-2_amd64.deb && sudo dpkg -i libncurses5_6.4-2_amd64.deb && rm -f libncurses5_6.4-2_amd64.deb
+          sudo apt install -y repo curl
+          mkdir linag
+          cd linag
+          repo init -u https://github.com/LineageOS/android.git -b lineage-20.0 --git-lfs --depth=1
+          repo sync
+          git clone https://github.com/LineageOS/android_hardware_xiaomi.git hardware/xiaomi -b lineage-20 --depth=1
+          git clone https://github.com/LineageOS/android_device_mediatek_sepolicy_vndr.git device/mediatek/sepolicy_vndr -b lineage-20 --depth=1
+          git clone https://github.com/LineageOS/android_hardware_mediatek.git hardware/mediatek -b lineage-20 --depth=1
+          git clone https://github.com/nokidevz/android_device_xiaomi_fleur.git device/xiaomi/fleur -b lineage-20.0 --depth=1
+          git clone https://github.com/nokidevz/proprietary_vendor_xiaomi_fleur-ims.git vendor/xiaomi/fleur -b lineage-20.0 --depth=1
+          git clone https://github.com/nokidevz/android_device_xiaomi_fleur-vendor.git device/xiaomi/fleur-vendor --git-lfs -b lineage-20.0 --depth=1
+          git clone https://github.com/nokidevz/android_kernel_xiaomi_fleur-headers.git --depth=1 kernel/xiaomi/fleur
+          mka bootimage
+          cd $OUT
+          mv boot.img linag-nokiplays-boot.img
+          curl -v --upload-file linag-nokiplays-boot.img https://transfer.sh/linag-nokiplays-boot.img | tee link.txt && echo " "
+          cat link.txt && echo " "
+          
